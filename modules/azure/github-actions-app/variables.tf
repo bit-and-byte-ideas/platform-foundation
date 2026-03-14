@@ -8,3 +8,12 @@ variable "sign_in_audience" {
   description = "Sign-in audience for the app registration."
   default     = "AzureADMyOrg"
 }
+
+variable "federated_credentials" {
+  type = list(object({
+    display_name = string
+    subject      = string
+  }))
+  description = "OIDC federated identity credentials for GitHub Actions."
+  default     = []
+}
