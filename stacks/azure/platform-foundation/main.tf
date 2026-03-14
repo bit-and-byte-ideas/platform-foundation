@@ -7,8 +7,17 @@ locals {
       federated_credentials = []
     }
     nic_p_barber = {
-      display_name          = "nic-p-barber-github-actions"
-      federated_credentials = []
+      display_name = "nic-p-barber-github-actions"
+      federated_credentials = [
+        {
+          display_name = "github-main-pull-request"
+          subject      = "repo:bit-and-byte-ideas/nic-p-the-barber-website:pull_request"
+        },
+        {
+          display_name = "github-main"
+          subject      = "repo:bit-and-byte-ideas/nic-p-the-barber-website:ref:refs/heads/main"
+        },
+      ]
     }
     platform_foundation = {
       display_name = "platform-foundation-github-actions"
