@@ -7,8 +7,17 @@ locals {
       federated_credentials = []
     }
     nic_p_barber = {
-      display_name          = "nic-p-barber-github-actions"
-      federated_credentials = []
+      display_name = "nic-p-barber-github-actions"
+      federated_credentials = [
+        {
+          display_name = "github-main-pull-request"
+          subject      = "repo:bit-and-byte-ideas/nic-p-the-barber-website:pull_request"
+        },
+        {
+          display_name = "github-main"
+          subject      = "repo:bit-and-byte-ideas/nic-p-the-barber-website:ref:refs/heads/main"
+        },
+      ]
     }
     platform_foundation = {
       display_name = "platform-foundation-github-actions"
@@ -52,6 +61,21 @@ module "terraform_state" {
 }
 
 data "azurerm_subscription" "current" {}
+
+# Microsoft Graph — used to grant API permissions to service principals.
+data "azuread_application_published_app_ids" "well_known" {}
+
+data "azuread_service_principal" "msgraph" {
+  client_id = data.azuread_application_published_app_ids.well_known.result["MicrosoftGraph"]
+}
+
+# Application.ReadWrite.All — allows the CI workflow to read and manage all
+# app registrations in the tenant via the azuread provider.
+resource "azuread_app_role_assignment" "platform_foundation_app_rw" {
+  app_role_id         = data.azuread_service_principal.msgraph.app_role_ids["Application.ReadWrite.All"]
+  principal_object_id = module.github_actions_app["platform_foundation"].service_principal_object_id
+  resource_object_id  = data.azuread_service_principal.msgraph.object_id
+}
 
 # Contributor at the subscription level — allows the workflow to manage
 # all Azure resources declared in this stack.

@@ -47,7 +47,7 @@ jobs:
         run: tofu init
 
       - name: Plan
-        run: tofu plan -out=tfplan -no-color 2>&1 | tee plan-output.txt
+        run: tofu plan -out=tfplan 2>&1 | sed 's/\x1b\[[0-9;]*m//g' | tee plan-output.txt
 
       - name: Upload plan to blob storage
         run: |
@@ -79,7 +79,7 @@ jobs:
               '',
               '<details><summary>Expand plan</summary>',
               '',
-              '```',
+              '```diff',
               plan,
               '```',
               '',
