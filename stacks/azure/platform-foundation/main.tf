@@ -19,6 +19,19 @@ locals {
         },
       ]
     }
+    bit_and_byte_ideas = {
+      display_name = "bit-and-byte-ideas-github-actions"
+      federated_credentials = [
+        {
+          display_name = "github-main-pull-request"
+          subject      = "repo:bit-and-byte-ideas/bit-and-byte-ideas-website:pull_request"
+        },
+        {
+          display_name = "github-main"
+          subject      = "repo:bit-and-byte-ideas/bit-and-byte-ideas-website:ref:refs/heads/main"
+        },
+      ]
+    }
     platform_foundation = {
       display_name = "platform-foundation-github-actions"
       federated_credentials = [
