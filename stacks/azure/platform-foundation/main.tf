@@ -20,7 +20,7 @@ locals {
       ]
     }
     bit_and_byte_ideas = {
-      display_name = "bit-and-byte-ideas-github-actions"
+      display_name = "bit-and-byte-ideas-website-github-actions"
       federated_credentials = [
         {
           display_name = "github-main-pull-request"
@@ -52,6 +52,7 @@ locals {
     "lariosincometax",
     "nic-p-barber",
     "platform-foundation",
+    "bit-and-byte-ideas-website"
   ]
 }
 
