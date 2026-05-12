@@ -1,0 +1,16 @@
+{
+  "display_name": "platform-foundation-github-actions",
+  "federated_credentials": [
+    {
+      "display_name": "plan",
+      "subject": "repo:bit-and-byte-ideas/platform-foundation:pull_request"
+    },
+    {
+      "display_name": "apply",
+      "subject": "repo:bit-and-byte-ideas/platform-foundation:ref:refs/heads/main"
+    }
+  ],
+  "azure_roles": true,
+  "resource_group": null,
+  "state_container": "platform-foundation"
+}

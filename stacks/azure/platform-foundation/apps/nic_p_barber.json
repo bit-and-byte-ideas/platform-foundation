@@ -1,0 +1,16 @@
+{
+  "display_name": "nic-p-barber-github-actions",
+  "federated_credentials": [
+    {
+      "display_name": "github-main-pull-request",
+      "subject": "repo:bit-and-byte-ideas/nic-p-the-barber-website:pull_request"
+    },
+    {
+      "display_name": "github-main",
+      "subject": "repo:bit-and-byte-ideas/nic-p-the-barber-website:ref:refs/heads/main"
+    }
+  ],
+  "azure_roles": false,
+  "resource_group": null,
+  "state_container": "nic-p-barber"
+}

@@ -1,0 +1,15 @@
+{
+  "display_name": "bit-and-byte-ideas-website-prod-github-actions",
+  "federated_credentials": [
+    {
+      "display_name": "github-prod",
+      "subject": "repo:bit-and-byte-ideas/bit-and-byte-ideas-website:environment:prod"
+    }
+  ],
+  "azure_roles": true,
+  "resource_group": {
+    "name": "rg-bit-and-byte-ideas-website-prod",
+    "location": "westus2"
+  },
+  "state_container": "bit-and-byte-ideas-website-prod"
+}
