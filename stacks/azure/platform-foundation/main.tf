@@ -1,10 +1,13 @@
 locals {
   # Add new GitHub Actions app registrations here.
   # Each key becomes the map key used in import blocks and state paths.
+  # Set azure_roles = true to grant Contributor on the subscription and
+  # Storage Blob Data Contributor on the state storage account.
   github_actions_apps = {
     larios_income_tax = {
       display_name          = "larios-income-tax-terraform"
       federated_credentials = []
+      azure_roles           = false
     }
     nic_p_barber = {
       display_name = "nic-p-barber-github-actions"
@@ -18,6 +21,7 @@ locals {
           subject      = "repo:bit-and-byte-ideas/nic-p-the-barber-website:ref:refs/heads/main"
         },
       ]
+      azure_roles = false
     }
     bit_and_byte_ideas = {
       display_name = "bit-and-byte-ideas-website-github-actions"
@@ -31,6 +35,7 @@ locals {
           subject      = "repo:bit-and-byte-ideas/bit-and-byte-ideas-website:ref:refs/heads/main"
         },
       ]
+      azure_roles = true
     }
     platform_foundation = {
       display_name = "platform-foundation-github-actions"
@@ -44,7 +49,12 @@ locals {
           subject      = "repo:bit-and-byte-ideas/platform-foundation:ref:refs/heads/main"
         },
       ]
+      azure_roles = true
     }
+  }
+
+  apps_needing_azure_roles = {
+    for k, v in local.github_actions_apps : k => v if v.azure_roles
   }
 
   # State containers: one per project plus this stack's own container.
@@ -91,18 +101,20 @@ resource "azuread_app_role_assignment" "platform_foundation_app_rw" {
   resource_object_id  = data.azuread_service_principal.msgraph.object_id
 }
 
-# Contributor at the subscription level — allows the workflow to manage
-# all Azure resources declared in this stack.
-resource "azurerm_role_assignment" "platform_foundation_contributor" {
+# Contributor at the subscription level — allows each workflow to manage
+# Azure resources. Enabled per-app via azure_roles = true in the map above.
+resource "azurerm_role_assignment" "subscription_contributor" {
+  for_each             = local.apps_needing_azure_roles
   scope                = data.azurerm_subscription.current.id
   role_definition_name = "Contributor"
-  principal_id         = module.github_actions_app["platform_foundation"].service_principal_object_id
+  principal_id         = module.github_actions_app[each.key].service_principal_object_id
 }
 
-# Storage Blob Data Contributor on the state storage account — allows the
+# Storage Blob Data Contributor on the state storage account — allows each
 # workflow to upload and download plan files stored in blob storage.
-resource "azurerm_role_assignment" "platform_foundation_blob" {
+resource "azurerm_role_assignment" "blob_contributor" {
+  for_each             = local.apps_needing_azure_roles
   scope                = module.terraform_state.storage_account_id
   role_definition_name = "Storage Blob Data Contributor"
-  principal_id         = module.github_actions_app["platform_foundation"].service_principal_object_id
+  principal_id         = module.github_actions_app[each.key].service_principal_object_id
 }
