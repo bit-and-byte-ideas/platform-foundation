@@ -1,104 +1,35 @@
 locals {
-  # Add new GitHub Actions app registrations here.
-  # Each key becomes the map key used in import blocks and state paths.
+  # App definitions live in apps/*.json — one file per GitHub Actions identity.
+  # To register a new repo/environment, add a JSON file; no edits here needed.
+  # See apps/bit_and_byte_ideas_prod.json for the expected schema.
   #
-  # azure_roles:     set to true to grant Storage Blob Data Contributor on the
-  #                  state storage account and a scoped Contributor assignment.
-  # resource_group:  when set, platform-foundation pre-creates this RG and scopes
-  #                  Contributor to it (recommended for project-level apps).
-  #                  Set to null only for platform_foundation itself, which needs
-  #                  subscription-wide Contributor to manage tenant resources.
+  # Schema fields:
+  #   display_name          — Azure AD app registration display name
+  #   federated_credentials — list of {display_name, subject} OIDC bindings
+  #   azure_roles           — true to grant Contributor + Storage Blob Data Contributor
+  #   resource_group        — {name, location} to scope Contributor to a pre-created RG,
+  #                           or null to use subscription scope (platform_foundation only)
+  #   state_container       — blob container name for this app's OpenTofu state
   github_actions_apps = {
-    larios_income_tax = {
-      display_name          = "larios-income-tax-terraform"
-      federated_credentials = []
-      azure_roles           = false
-      resource_group        = null
-    }
-    nic_p_barber = {
-      display_name = "nic-p-barber-github-actions"
-      federated_credentials = [
-        {
-          display_name = "github-main-pull-request"
-          subject      = "repo:bit-and-byte-ideas/nic-p-the-barber-website:pull_request"
-        },
-        {
-          display_name = "github-main"
-          subject      = "repo:bit-and-byte-ideas/nic-p-the-barber-website:ref:refs/heads/main"
-        },
-      ]
-      azure_roles    = false
-      resource_group = null
-    }
-    bit_and_byte_ideas_dev = {
-      display_name = "bit-and-byte-ideas-website-dev-github-actions"
-      federated_credentials = [
-        {
-          display_name = "github-dev"
-          subject      = "repo:bit-and-byte-ideas/bit-and-byte-ideas-website:environment:dev"
-        },
-      ]
-      azure_roles = true
-      resource_group = {
-        name     = "rg-bit-and-byte-ideas-website-dev"
-        location = "westus2"
-      }
-    }
-    bit_and_byte_ideas_prod = {
-      display_name = "bit-and-byte-ideas-website-prod-github-actions"
-      federated_credentials = [
-        {
-          display_name = "github-prod"
-          subject      = "repo:bit-and-byte-ideas/bit-and-byte-ideas-website:environment:prod"
-        },
-      ]
-      azure_roles = true
-      resource_group = {
-        name     = "rg-bit-and-byte-ideas-website-prod"
-        location = "westus2"
-      }
-    }
-    platform_foundation = {
-      display_name = "platform-foundation-github-actions"
-      federated_credentials = [
-        {
-          display_name = "plan"
-          subject      = "repo:bit-and-byte-ideas/platform-foundation:pull_request"
-        },
-        {
-          display_name = "apply"
-          subject      = "repo:bit-and-byte-ideas/platform-foundation:ref:refs/heads/main"
-        },
-      ]
-      # null resource_group keeps Contributor at subscription scope — platform_foundation
-      # manages tenant-wide resources (app registrations, storage, role assignments)
-      # so it legitimately needs broader access than project-level apps.
-      azure_roles    = true
-      resource_group = null
-    }
+    for f in fileset("${path.module}/apps", "*.json") :
+    trimsuffix(f, ".json") => jsondecode(file("${path.module}/apps/${f}"))
   }
 
   apps_needing_azure_roles = {
     for k, v in local.github_actions_apps : k => v if v.azure_roles
   }
 
-  # Apps that get Contributor scoped to a pre-created resource group.
   apps_with_project_rg = {
     for k, v in local.github_actions_apps : k => v if v.azure_roles && v.resource_group != null
   }
 
-  # Apps that need subscription-level Contributor (only platform_foundation).
   apps_with_subscription_scope = {
     for k, v in local.github_actions_apps : k => v if v.azure_roles && v.resource_group == null
   }
 
-  # State containers: one per environment per project, plus this stack's own container.
   state_containers = [
-    "lariosincometax",
-    "nic-p-barber",
-    "platform-foundation",
-    "bit-and-byte-ideas-website-dev",
-    "bit-and-byte-ideas-website-prod",
+    for k, v in local.github_actions_apps : v.state_container
+    if v.state_container != null
   ]
 }
 

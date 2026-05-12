@@ -1,0 +1,7 @@
+{
+  "display_name": "larios-income-tax-terraform",
+  "federated_credentials": [],
+  "azure_roles": false,
+  "resource_group": null,
+  "state_container": "lariosincometax"
+}
