@@ -4,6 +4,14 @@
     {
       "display_name": "github-prod",
       "subject": "repo:bit-and-byte-ideas/bit-and-byte-ideas-website:environment:prod"
+    },
+    {
+      "display_name": "github-prod-main-pull-request",
+      "subject": "repo:bit-and-byte-ideas/bit-and-byte-ideas-website:pull_request"
+    },
+    {
+      "display_name": "github-prod-main",
+      "subject": "repo:bit-and-byte-ideas/bit-and-byte-ideas-website:ref:refs/heads/main"
     }
   ],
   "azure_roles": true,
