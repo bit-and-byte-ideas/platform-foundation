@@ -15,6 +15,7 @@
     }
   ],
   "azure_roles": true,
+  "static_web_app_custom_domain": true,
   "resource_group": {
     "name": "rg-bit-and-byte-ideas-website-prod",
     "location": "westus2"

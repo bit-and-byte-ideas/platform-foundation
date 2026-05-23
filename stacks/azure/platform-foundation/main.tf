@@ -6,10 +6,12 @@ locals {
   # Schema fields:
   #   display_name          — Azure AD app registration display name
   #   federated_credentials — list of {display_name, subject} OIDC bindings
-  #   azure_roles           — true to grant Contributor + Storage Blob Data Contributor
-  #   resource_group        — {name, location} to scope Contributor to a pre-created RG,
-  #                           or null to use subscription scope (platform_foundation only)
-  #   state_container       — blob container name for this app's OpenTofu state
+  #   azure_roles                   — true to grant Contributor + Storage Blob Data Contributor
+  #   resource_group                — {name, location} to scope Contributor to a pre-created RG,
+  #                                   or null to use subscription scope (platform_foundation only)
+  #   state_container               — blob container name for this app's OpenTofu state
+  #   static_web_app_custom_domain  — true to grant subscription-level permission to poll
+  #                                   async operation results for Static Web App custom domains
   github_actions_apps = {
     for f in fileset("${path.module}/apps", "*.json") :
     trimsuffix(f, ".json") => jsondecode(file("${path.module}/apps/${f}"))
@@ -26,6 +28,14 @@ locals {
   apps_with_subscription_scope = {
     for k, v in local.github_actions_apps : k => v if v.azure_roles && v.resource_group == null
   }
+
+  apps_with_static_web_app_custom_domain = {
+    for k, v in local.github_actions_apps : k => v
+    if lookup(v, "static_web_app_custom_domain", false) == true
+  }
+
+  # Pre-generated UUID so the UAA condition can reference it before first apply.
+  static_web_app_domain_poller_role_id = "382f5a3a-4ed5-4215-a07f-a5729002e785"
 
   state_containers = [
     for k, v in local.github_actions_apps : v.state_container
@@ -94,10 +104,38 @@ resource "azurerm_role_assignment" "subscription_contributor" {
   principal_id         = module.github_actions_app[each.key].service_principal_object_id
 }
 
+# Custom role that grants only the permission needed to poll async operation
+# results when creating/updating Static Web App custom domains. The Azure
+# provider hits Microsoft.Web/locations/operationResults at the subscription
+# scope during the long-poll, which falls outside a resource-group-scoped
+# Contributor assignment.
+resource "azurerm_role_definition" "static_web_app_domain_poller" {
+  name        = local.static_web_app_domain_poller_role_id
+  scope       = data.azurerm_subscription.current.id
+  description = "Allows polling async operation results for Static Web App custom domain provisioning."
+
+  permissions {
+    actions = [
+      "Microsoft.Web/locations/operationResults/read",
+      "Microsoft.Web/locations/operations/read",
+    ]
+  }
+
+  assignable_scopes = [data.azurerm_subscription.current.id]
+}
+
+resource "azurerm_role_assignment" "static_web_app_domain_poller" {
+  for_each           = local.apps_with_static_web_app_custom_domain
+  scope              = data.azurerm_subscription.current.id
+  role_definition_id = azurerm_role_definition.static_web_app_domain_poller.role_definition_resource_id
+  principal_id       = module.github_actions_app[each.key].service_principal_object_id
+}
+
 # User Access Administrator for platform_foundation, conditioned to only allow
-# assigning Contributor (b24988ac) and Storage Blob Data Contributor (ba92f5b4).
+# assigning Contributor (b24988ac), Storage Blob Data Contributor (ba92f5b4),
+# and the custom Static Web App Domain Poller role (382f5a3a).
 # This prevents the pipeline from escalating its own or other identities beyond
-# those two roles even if the workflow or repo is compromised.
+# those roles even if the workflow or repo is compromised.
 resource "azurerm_role_assignment" "platform_foundation_uaa" {
   scope                = data.azurerm_subscription.current.id
   role_definition_name = "User Access Administrator"
@@ -112,7 +150,8 @@ resource "azurerm_role_assignment" "platform_foundation_uaa" {
     (
       @Request[Microsoft.Authorization/roleAssignments:RoleDefinitionId] ForAnyOfAnyValues:GuidEquals {
         b24988ac-6180-42a0-ab88-20f7382dd24c,
-        ba92f5b4-2d11-453d-a403-e96b0029c9fe
+        ba92f5b4-2d11-453d-a403-e96b0029c9fe,
+        ${local.static_web_app_domain_poller_role_id}
       }
     )
   EOT
