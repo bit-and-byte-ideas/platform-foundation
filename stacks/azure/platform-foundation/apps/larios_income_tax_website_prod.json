@@ -1,0 +1,23 @@
+{
+  "display_name": "larios-income-tax-website-prod-github-actions",
+  "federated_credentials": [
+    {
+      "display_name": "github-prod",
+      "subject": "repo:bit-and-byte-ideas/larios-income-tax-website:environment:prod"
+    },
+    {
+      "display_name": "github-prod-main-pull-request",
+      "subject": "repo:bit-and-byte-ideas/larios-income-tax-website:pull_request"
+    },
+    {
+      "display_name": "github-prod-main",
+      "subject": "repo:bit-and-byte-ideas/larios-income-tax-website:ref:refs/heads/main"
+    }
+  ],
+  "azure_roles": true,
+  "resource_group": {
+    "name": "rg-larios-income-tax-website-prod",
+    "location": "westus2"
+  },
+  "state_container": "larios-income-tax-website-prod"
+}
