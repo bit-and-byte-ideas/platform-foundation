@@ -3,15 +3,15 @@
   "federated_credentials": [
     {
       "display_name": "github-dev",
-      "subject": "repo:bit-and-byte-ideas/pixlhungry-link-site:environment:dev"
+      "subject": "repo:bit-and-byte-ideas@116509496/pixlhungry-link-site@1313348283:environment:dev"
     },
     {
       "display_name": "github-dev-main-pull-request",
-      "subject": "repo:bit-and-byte-ideas/pixlhungry-link-site:pull_request"
+      "subject": "repo:bit-and-byte-ideas@116509496/pixlhungry-link-site@1313348283:pull_request"
     },
     {
       "display_name": "github-dev-main",
-      "subject": "repo:bit-and-byte-ideas/pixlhungry-link-site:ref:refs/heads/main"
+      "subject": "repo:bit-and-byte-ideas@116509496/pixlhungry-link-site@1313348283:ref:refs/heads/main"
     }
   ],
   "azure_roles": true,
