@@ -3,6 +3,17 @@ locals {
   # To register a new repo/environment, add a JSON file; no edits here needed.
   # See apps/bit_and_byte_ideas_prod.json for the expected schema.
   #
+  # IMPORTANT — federated_credentials.subject prefix:
+  # GitHub is rolling out immutable-ID-based OIDC subject claims
+  # (repo:{org}@{orgId}/{repo}@{repoId}:...) as the default for newly created
+  # repos, while older repos keep the legacy name-based format
+  # (repo:{org}/{repo}:...). The prefix is decided by GitHub per-repo at
+  # creation time and isn't controlled by this config. Before adding a new
+  # app JSON, confirm the actual prefix for that repo with:
+  #   gh api repos/<org>/<repo>/actions/oidc/customization/sub --jq .sub_claim_prefix
+  # and use that value as the prefix for every subject in the file — do not
+  # assume the plain "repo:{org}/{repo}" form.
+  #
   # Schema fields:
   #   display_name          — Azure AD app registration display name
   #   federated_credentials — list of {display_name, subject} OIDC bindings
