@@ -1,0 +1,23 @@
+{
+  "display_name": "pixlhungry-link-site-dev-github-actions",
+  "federated_credentials": [
+    {
+      "display_name": "github-dev",
+      "subject": "repo:bit-and-byte-ideas/pixlhungry-link-site:environment:dev"
+    },
+    {
+      "display_name": "github-dev-main-pull-request",
+      "subject": "repo:bit-and-byte-ideas/pixlhungry-link-site:pull_request"
+    },
+    {
+      "display_name": "github-dev-main",
+      "subject": "repo:bit-and-byte-ideas/pixlhungry-link-site:ref:refs/heads/main"
+    }
+  ],
+  "azure_roles": true,
+  "resource_group": {
+    "name": "rg-pixlhungry-link-site-dev",
+    "location": "westus2"
+  },
+  "state_container": "pixlhungry-link-site-dev"
+}
