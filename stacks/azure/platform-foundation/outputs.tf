@@ -44,5 +44,5 @@ output "cert_manager_dns01_subscription_id" {
 
 output "cert_manager_dns01_dns_zone_resource_group" {
   description = "Resource group containing the bitandbyteideas.com DNS zone, for the cert-manager ClusterIssuer config."
-  value       = data.azurerm_dns_zone.bitandbyteideas_com.resource_group_name
+  value       = azurerm_dns_zone.bitandbyteideas_com.resource_group_name
 }
