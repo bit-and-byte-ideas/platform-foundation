@@ -3,9 +3,10 @@
 # (e.g. argocd.home.bitandbyteideas.com). Consumed by a ClusterIssuer in a
 # separate Kubernetes repo — no cluster-side resources are defined here.
 #
-# The DNS zone itself is managed in dns_bitandbyteideas_com.tf — this role
-# assignment just scopes to it. Never touch the Static Web App / custom
-# domain resources, which remain owned by the bit-and-byte-ideas-website repo.
+# The DNS zone itself is managed by module.dns_zone["bitandbyteideas_com"]
+# (see dns_zones/bitandbyteideas_com.json) — this role assignment just
+# scopes to it. Never touch the Static Web App / custom domain resources,
+# which remain owned by the bit-and-byte-ideas-website repo.
 
 resource "azuread_application" "cert_manager_dns01" {
   display_name = "cert-manager-dns01-bitandbyteideas-com"
@@ -52,7 +53,7 @@ resource "azuread_application_password" "cert_manager_dns01" {
 # resource group or subscription), since cert-manager only ever needs to
 # create/delete _acme-challenge.* TXT records in this one zone.
 resource "azurerm_role_assignment" "cert_manager_dns01_zone_contributor" {
-  scope                = azurerm_dns_zone.bitandbyteideas_com.id
+  scope                = module.dns_zone["bitandbyteideas_com"].zone_id
   role_definition_name = "DNS Zone Contributor"
   principal_id         = azuread_service_principal.cert_manager_dns01.object_id
 }

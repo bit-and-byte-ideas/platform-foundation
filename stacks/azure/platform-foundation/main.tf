@@ -57,6 +57,20 @@ locals {
     for k, v in local.github_actions_apps : v.state_container
     if v.state_container != null
   ]
+
+  # DNS zone definitions live in dns_zones/*.json — one file per domain.
+  # To manage a new domain's zone here, add a JSON file; no edits here
+  # needed. See dns_zones/bitandbyteideas_com.json for the expected schema
+  # (and modules/azure/dns-zone/variables.tf for the full `records` shape).
+  #
+  # Only records that aren't specific to any one app belong here (mail
+  # routing/auth, domain verification, etc.) — a domain's own app repo
+  # (e.g. its Static Web App's apex/www records) keeps those, referencing
+  # the zone via a `data "azurerm_dns_zone"` block instead of owning it.
+  dns_zones = {
+    for f in fileset("${path.module}/dns_zones", "*.json") :
+    trimsuffix(f, ".json") => jsondecode(file("${path.module}/dns_zones/${f}"))
+  }
 }
 
 module "github_actions_app" {
@@ -65,6 +79,16 @@ module "github_actions_app" {
 
   display_name          = each.value.display_name
   federated_credentials = each.value.federated_credentials
+}
+
+module "dns_zone" {
+  for_each = local.dns_zones
+  source   = "../../../modules/azure/dns-zone"
+
+  zone_name            = each.value.zone_name
+  resource_group_name  = each.value.resource_group_name
+  tags                 = each.value.tags
+  records              = each.value.records
 }
 
 module "terraform_state" {

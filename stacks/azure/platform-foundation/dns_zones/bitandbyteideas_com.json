@@ -1,0 +1,55 @@
+{
+  "zone_name": "bitandbyteideas.com",
+  "resource_group_name": "rg-bit-and-byte-ideas-website-prod",
+  "tags": {
+    "owner": "bit-and-byte-ideas",
+    "environment": "prod",
+    "managed_by": "opentofu",
+    "source": "github.com/bit-and-byte-ideas/platform-foundation"
+  },
+  "records": [
+    {
+      "type": "MX",
+      "name": "@",
+      "ttl": 300,
+      "mx_records": [
+        { "preference": 10, "exchange": "mail.protonmail.ch." },
+        { "preference": 20, "exchange": "mailsec.protonmail.ch." }
+      ]
+    },
+    {
+      "type": "TXT",
+      "name": "@",
+      "ttl": 300,
+      "values": [
+        "atlassian-domain-verification=tbGo0150p21lA6kaANcW2PauHlwaPSqB5a6GiahGN7W4vA9o3FzyKzMOfdiRenLS",
+        "protonmail-verification=7bfc9f22578142f18755e7f44fc7974535152c2c",
+        "v=spf1 include:_spf.protonmail.ch ~all"
+      ]
+    },
+    {
+      "type": "TXT",
+      "name": "_dmarc",
+      "ttl": 300,
+      "values": ["v=DMARC1; p=quarantine"]
+    },
+    {
+      "type": "CNAME",
+      "name": "protonmail._domainkey",
+      "ttl": 300,
+      "value": "protonmail.domainkey.dgeesy544louti5wx6ruah54qtjo4cq5rjlt25frofn464zeldgdq.domains.proton.ch."
+    },
+    {
+      "type": "CNAME",
+      "name": "protonmail2._domainkey",
+      "ttl": 300,
+      "value": "protonmail2.domainkey.dgeesy544louti5wx6ruah54qtjo4cq5rjlt25frofn464zeldgdq.domains.proton.ch."
+    },
+    {
+      "type": "CNAME",
+      "name": "protonmail3._domainkey",
+      "ttl": 300,
+      "value": "protonmail3.domainkey.dgeesy544louti5wx6ruah54qtjo4cq5rjlt25frofn464zeldgdq.domains.proton.ch."
+    }
+  ]
+}
