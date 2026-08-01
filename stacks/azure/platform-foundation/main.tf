@@ -48,6 +48,11 @@ locals {
   # Pre-generated UUID so the UAA condition can reference it before first apply.
   static_web_app_domain_poller_role_id = "382f5a3a-4ed5-4215-a07f-a5729002e785"
 
+  # Built-in "DNS Zone Contributor" role ID — needed in the UAA condition
+  # allow-list below so the pipeline can grant it to the cert-manager
+  # dns01 solver SP (see cert_manager_dns01.tf).
+  dns_zone_contributor_role_id = "befefa01-2a29-4197-83a8-272ff33ce314"
+
   state_containers = [
     for k, v in local.github_actions_apps : v.state_container
     if v.state_container != null
@@ -144,7 +149,8 @@ resource "azurerm_role_assignment" "static_web_app_domain_poller" {
 
 # User Access Administrator for platform_foundation, conditioned to only allow
 # assigning Contributor (b24988ac), Storage Blob Data Contributor (ba92f5b4),
-# and the custom Static Web App Domain Poller role (382f5a3a).
+# the custom Static Web App Domain Poller role (382f5a3a), and DNS Zone
+# Contributor (befefa01).
 # This prevents the pipeline from escalating its own or other identities beyond
 # those roles even if the workflow or repo is compromised.
 resource "azurerm_role_assignment" "platform_foundation_uaa" {
@@ -162,7 +168,8 @@ resource "azurerm_role_assignment" "platform_foundation_uaa" {
       @Request[Microsoft.Authorization/roleAssignments:RoleDefinitionId] ForAnyOfAnyValues:GuidEquals {
         b24988ac-6180-42a0-ab88-20f7382dd24c,
         ba92f5b4-2d11-453d-a403-e96b0029c9fe,
-        ${local.static_web_app_domain_poller_role_id}
+        ${local.static_web_app_domain_poller_role_id},
+        ${local.dns_zone_contributor_role_id}
       }
     )
   EOT
