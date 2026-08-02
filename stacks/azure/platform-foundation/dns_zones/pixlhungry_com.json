@@ -1,0 +1,11 @@
+{
+  "zone_name": "pixlhungry.com",
+  "resource_group_name": "rg-pixlhungry-link-site-prod",
+  "tags": {
+    "owner": "bit-and-byte-ideas",
+    "environment": "prod",
+    "managed_by": "opentofu",
+    "source": "github.com/bit-and-byte-ideas/platform-foundation"
+  },
+  "records": []
+}
