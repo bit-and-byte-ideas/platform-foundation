@@ -7,5 +7,18 @@
     "managed_by": "opentofu",
     "source": "github.com/bit-and-byte-ideas/platform-foundation"
   },
-  "records": []
+  "records": [
+    {
+      "type": "TXT",
+      "name": "@",
+      "ttl": 300,
+      "values": ["_q3kezpiratm8glc4xaxjvza8eehpby1"]
+    },
+    {
+      "type": "TXT",
+      "name": "_dmarc",
+      "ttl": 300,
+      "values": ["v=DMARC1; p=quarantine"]
+    }
+  ]
 }
