@@ -1,0 +1,24 @@
+{
+  "display_name": "solthoth-profilesite-prod-github-actions",
+  "federated_credentials": [
+    {
+      "display_name": "github-prod",
+      "subject": "repo:solthoth/profilesite:environment:prod"
+    },
+    {
+      "display_name": "github-prod-main-pull-request",
+      "subject": "repo:solthoth/profilesite:pull_request"
+    },
+    {
+      "display_name": "github-prod-main",
+      "subject": "repo:solthoth/profilesite:ref:refs/heads/main"
+    }
+  ],
+  "azure_roles": true,
+  "static_web_app_custom_domain": true,
+  "resource_group": {
+    "name": "rg-solthoth-profilesite-prod",
+    "location": "westus2"
+  },
+  "state_container": "solthoth-profilesite-prod"
+}
