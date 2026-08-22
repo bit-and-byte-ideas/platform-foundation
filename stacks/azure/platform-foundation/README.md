@@ -47,6 +47,12 @@ follows, and the app repo's `data "azurerm_dns_zone"` lookup depends on it.
 Start with `"records": []` unless you already know you need MX/TXT records
 that aren't app-specific.
 
+It's safe to add this alongside step 1 in the same PR/apply even for a
+brand-new app whose resource group doesn't exist yet — `module.dns_zone` in
+`main.tf` explicitly `depends_on` `azurerm_resource_group.project`, since
+`resource_group_name` here is just a JSON-sourced string with no implicit
+dependency edge to the resource group resource on its own.
+
 ## 3. Apply, then wire secrets into the app repo
 
 Merge to `main` here so `tofu-apply.yml` provisions the resource group, the
