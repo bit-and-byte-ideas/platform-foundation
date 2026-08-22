@@ -112,7 +112,13 @@ repeat step 2 with the new token (`bdd49b0` is a real instance of this).
   Each time the provider starts polling a new endpoint, the 403 names the
   exact missing action — add it to that role's `actions` list. This has
   happened twice: `operationResults/read` (commit `183be0f`) and
-  `staticSitesOperationStatuses/read`.
+  `staticSitesOperationStatuses/read`. For the latter, the literal action
+  string from the `AuthorizationFailed` error isn't a real registerable
+  action (`az provider operation show --namespace Microsoft.Web` doesn't
+  list it, and `azurerm_role_definition` rejects it verbatim with
+  `InvalidActionOrNotAction`) — grant it as a wildcard scoped to just that
+  pseudo-resource type instead (`Microsoft.Web/locations/staticSitesOperationStatuses/*`),
+  not the exact string and not the much broader `Microsoft.Web/locations/*`.
 - **Registrar NS delegation is out of scope for this repo.** Creating the
   zone here only makes Azure DNS authoritative *if* the domain's registrar
   delegates to it — set the zone's `name_servers` output as NS records at
