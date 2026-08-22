@@ -3,15 +3,15 @@
   "federated_credentials": [
     {
       "display_name": "github-dev",
-      "subject": "repo:solthoth/profilesite:environment:dev"
+      "subject": "repo:solthoth/ProfileSite:environment:dev"
     },
     {
       "display_name": "github-dev-main-pull-request",
-      "subject": "repo:solthoth/profilesite:pull_request"
+      "subject": "repo:solthoth/ProfileSite:pull_request"
     },
     {
       "display_name": "github-dev-main",
-      "subject": "repo:solthoth/profilesite:ref:refs/heads/main"
+      "subject": "repo:solthoth/ProfileSite:ref:refs/heads/main"
     }
   ],
   "azure_roles": true,
