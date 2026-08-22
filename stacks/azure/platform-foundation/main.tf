@@ -172,12 +172,37 @@ resource "azurerm_role_definition" "static_web_app_domain_poller" {
       # type) with InvalidActionOrNotAction: "does not match any of the
       # actions supported by the providers". A wildcard one level up covers
       # it (Azure RBAC matches wildcards by string prefix at evaluation
-      # time regardless of catalog membership), at the cost of also
-      # granting the handful of other locations-scoped actions Azure
-      # registers under this resource type (network policy/VNet checks,
-      # managed API joins, deleted-site restore) — there's no narrower
-      # wildcard Azure's role-definition validation will accept.
+      # time regardless of catalog membership) — not_actions below claws
+      # back everything else that wildcard would otherwise grant, since
+      # this role is assigned at subscription scope to every app with
+      # static_web_app_custom_domain = true.
       "Microsoft.Web/locations/*",
+    ]
+
+    # Every other action currently registered under Microsoft.Web/locations/*
+    # (per `az provider operation show --namespace Microsoft.Web`), so the
+    # wildcard above only ever grants the two known read actions plus the
+    # one unregistered read it exists to cover — not managed-API joins,
+    # deleted-site restore, or VNet deletion/network-policy checks at
+    # subscription scope. Re-run that command and update this list if the
+    # provider registers new locations-scoped actions.
+    not_actions = [
+      "Microsoft.Web/locations/GetNetworkPolicies/action",
+      "Microsoft.Web/locations/apioperations/read",
+      "Microsoft.Web/locations/connectiongatewayinstallations/read",
+      "Microsoft.Web/locations/deleteVirtualNetworkOrSubnets/action",
+      "Microsoft.Web/locations/deletedSites/Read",
+      "Microsoft.Web/locations/deletedSites/restore/action",
+      "Microsoft.Web/locations/extractapidefinitionfromwsdl/action",
+      "Microsoft.Web/locations/functionappstacks/read",
+      "Microsoft.Web/locations/listwsdlinterfaces/action",
+      "Microsoft.Web/locations/managedapis/Join/Action",
+      "Microsoft.Web/locations/managedapis/apioperations/read",
+      "Microsoft.Web/locations/managedapis/read",
+      "Microsoft.Web/locations/notifyNetworkSecurityPerimeterUpdatesAvailable/action",
+      "Microsoft.Web/locations/previewstaticsiteworkflowfile/action",
+      "Microsoft.Web/locations/validateDeleteVirtualNetworkOrSubnets/action",
+      "Microsoft.Web/locations/webappstacks/read",
     ]
   }
 
