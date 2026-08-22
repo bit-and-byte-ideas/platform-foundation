@@ -126,14 +126,21 @@ repeat step 2 with the new token (`bdd49b0` is a real instance of this).
   role-definition validation apparently requires a wildcard's prefix to
   have at least one real match in the catalog; `Microsoft.Web/locations/*`
   does (`operationResults/read`, `operations/read`, `apioperations/read`,
-  etc. all live there) and is what's actually granted now — broader than
-  ideal, but there's no narrower wildcard Azure will accept, and RBAC
-  matches wildcards by string prefix at evaluation time regardless of
-  catalog membership. If a future provider version polls yet another
+  etc. all live there), so `actions` grants that wildcard — but since this
+  role is assigned at subscription scope to every app with
+  `static_web_app_custom_domain = true`, an unqualified
+  `Microsoft.Web/locations/*` would also hand each of those apps' pipelines
+  managed-API joins, deleted-site restore, and VNet-deletion/network-policy
+  actions on *any* app's resources, not just their own RG — real
+  privilege escalation if one pipeline is compromised. `not_actions` claws
+  every other currently-registered `Microsoft.Web/locations/*` action back
+  out, leaving only the two known reads plus the one unregistered read the
+  wildcard exists to cover. If a future provider version polls yet another
   undocumented endpoint under a *different* top-level resource type, this
-  same trick (widen to the nearest ancestor wildcard with catalog matches)
-  is the move — confirm with `az provider operation show` before assuming
-  the exact string will validate.
+  same trick (widen to the nearest ancestor wildcard with catalog matches,
+  then claw back everything else via `not_actions`) is the move — confirm
+  the current action list with `az provider operation show` rather than
+  assuming it's still accurate, since Azure can register new ones.
 - **Registrar NS delegation is out of scope for this repo.** Creating the
   zone here only makes Azure DNS authoritative *if* the domain's registrar
   delegates to it — set the zone's `name_servers` output as NS records at
