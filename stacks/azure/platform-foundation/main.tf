@@ -85,10 +85,10 @@ module "dns_zone" {
   for_each = local.dns_zones
   source   = "../../../modules/azure/dns-zone"
 
-  zone_name            = each.value.zone_name
-  resource_group_name  = each.value.resource_group_name
-  tags                 = each.value.tags
-  records              = each.value.records
+  zone_name           = each.value.zone_name
+  resource_group_name = each.value.resource_group_name
+  tags                = each.value.tags
+  records             = each.value.records
 }
 
 module "terraform_state" {
@@ -144,28 +144,33 @@ resource "azurerm_role_assignment" "subscription_contributor" {
   principal_id         = module.github_actions_app[each.key].service_principal_object_id
 }
 
-# Custom role that grants only the permission needed to poll async operation
+# Custom role that grants the permissions needed to poll async operation
 # results when creating/updating Static Web App custom domains. The Azure
-# provider hits Microsoft.Web/locations/operationResults at the subscription
-# scope during the long-poll, which falls outside a resource-group-scoped
-# Contributor assignment.
+# provider hits several Microsoft.Web/locations/* endpoints at the
+# subscription scope during the long-poll, which falls outside a
+# resource-group-scoped Contributor assignment.
 resource "azurerm_role_definition" "static_web_app_domain_poller" {
   name        = local.static_web_app_domain_poller_role_id
   scope       = data.azurerm_subscription.current.id
-  description = "Allows polling async operation results for Static Web App custom domain provisioning."
+  description = "Allows polling Microsoft.Web/locations/* async operation status for Static Web App custom domain provisioning."
 
   permissions {
     actions = [
-      "Microsoft.Web/locations/operationResults/read",
-      "Microsoft.Web/locations/operations/read",
-      # Not a literal registerable action — `az provider operation show
-      # --namespace Microsoft.Web` doesn't list it, and Tofu rejects it
-      # verbatim with InvalidActionOrNotAction if you try. The provider's
-      # own AuthorizationFailed error names it anyway when polling a Static
-      # Web App custom domain create/update, so it has to be granted via a
-      # wildcard scoped to just this pseudo-resource type rather than the
-      # exact string.
-      "Microsoft.Web/locations/staticSitesOperationStatuses/*",
+      # The provider also enforces Microsoft.Web/locations/staticSitesOperationStatuses/read
+      # while polling a Static Web App custom domain create/update, but that
+      # action isn't in Microsoft.Web's own registered operations catalog —
+      # `az provider operation show --namespace Microsoft.Web` doesn't list
+      # it under any casing, and azurerm_role_definition rejects the exact
+      # string (and even a wildcard scoped to that specific pseudo-resource
+      # type) with InvalidActionOrNotAction: "does not match any of the
+      # actions supported by the providers". A wildcard one level up covers
+      # it (Azure RBAC matches wildcards by string prefix at evaluation
+      # time regardless of catalog membership), at the cost of also
+      # granting the handful of other locations-scoped actions Azure
+      # registers under this resource type (network policy/VNet checks,
+      # managed API joins, deleted-site restore) — there's no narrower
+      # wildcard Azure's role-definition validation will accept.
+      "Microsoft.Web/locations/*",
     ]
   }
 
