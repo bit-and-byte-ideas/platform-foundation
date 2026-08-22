@@ -3,15 +3,15 @@
   "federated_credentials": [
     {
       "display_name": "github-prod",
-      "subject": "repo:solthoth/profilesite:environment:prod"
+      "subject": "repo:solthoth/ProfileSite:environment:prod"
     },
     {
       "display_name": "github-prod-main-pull-request",
-      "subject": "repo:solthoth/profilesite:pull_request"
+      "subject": "repo:solthoth/ProfileSite:pull_request"
     },
     {
       "display_name": "github-prod-main",
-      "subject": "repo:solthoth/profilesite:ref:refs/heads/main"
+      "subject": "repo:solthoth/ProfileSite:ref:refs/heads/main"
     }
   ],
   "azure_roles": true,
