@@ -108,17 +108,26 @@ repeat step 2 with the new token (`bdd49b0` is a real instance of this).
   subscription-scoped `Microsoft.Web/locations/...` endpoints while
   creating/updating a Static Web App custom domain, which falls outside a
   resource-group-scoped `Contributor` assignment. `main.tf` defines a
-  narrow custom role (`static_web_app_domain_poller`) for exactly this.
-  Each time the provider starts polling a new endpoint, the 403 names the
-  exact missing action — add it to that role's `actions` list. This has
-  happened twice: `operationResults/read` (commit `183be0f`) and
-  `staticSitesOperationStatuses/read`. For the latter, the literal action
-  string from the `AuthorizationFailed` error isn't a real registerable
-  action (`az provider operation show --namespace Microsoft.Web` doesn't
-  list it, and `azurerm_role_definition` rejects it verbatim with
-  `InvalidActionOrNotAction`) — grant it as a wildcard scoped to just that
-  pseudo-resource type instead (`Microsoft.Web/locations/staticSitesOperationStatuses/*`),
-  not the exact string and not the much broader `Microsoft.Web/locations/*`.
+  custom role (`static_web_app_domain_poller`) for exactly this. This has
+  bitten twice: missing `operationResults/read` (commit `183be0f`), then
+  missing `staticSitesOperationStatuses/read`. The second one doesn't
+  exist in Microsoft.Web's own registered operations catalog at all —
+  `az provider operation show --namespace Microsoft.Web` doesn't list it
+  under any casing, and `azurerm_role_definition` rejects both the exact
+  string *and* a wildcard scoped to that specific pseudo-resource type
+  (`.../staticSitesOperationStatuses/*`) with `InvalidActionOrNotAction:
+  "does not match any of the actions supported by the providers"`. Azure's
+  role-definition validation apparently requires a wildcard's prefix to
+  have at least one real match in the catalog; `Microsoft.Web/locations/*`
+  does (`operationResults/read`, `operations/read`, `apioperations/read`,
+  etc. all live there) and is what's actually granted now — broader than
+  ideal, but there's no narrower wildcard Azure will accept, and RBAC
+  matches wildcards by string prefix at evaluation time regardless of
+  catalog membership. If a future provider version polls yet another
+  undocumented endpoint under a *different* top-level resource type, this
+  same trick (widen to the nearest ancestor wildcard with catalog matches)
+  is the move — confirm with `az provider operation show` before assuming
+  the exact string will validate.
 - **Registrar NS delegation is out of scope for this repo.** Creating the
   zone here only makes Azure DNS authoritative *if* the domain's registrar
   delegates to it — set the zone's `name_servers` output as NS records at
