@@ -89,6 +89,13 @@ module "dns_zone" {
   resource_group_name = each.value.resource_group_name
   tags                = each.value.tags
   records             = each.value.records
+
+  # resource_group_name above is a plain JSON-sourced string, so Tofu has no
+  # implicit dependency edge to azurerm_resource_group.project even when a
+  # zone's RG is one it creates. Without this, a first-time apply that adds
+  # both an app and its DNS zone in the same PR can race and hit
+  # ResourceGroupNotFound.
+  depends_on = [azurerm_resource_group.project]
 }
 
 module "terraform_state" {
