@@ -7,7 +7,7 @@
     },
     {
       "display_name": "github-dev-main-pull-request",
-      "subject": "repo:solthoth/profilesite:environment:dev"
+      "subject": "repo:solthoth/profilesite:pull_request"
     },
     {
       "display_name": "github-dev-main",
