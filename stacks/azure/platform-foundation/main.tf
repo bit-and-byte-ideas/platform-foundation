@@ -158,6 +158,7 @@ resource "azurerm_role_definition" "static_web_app_domain_poller" {
     actions = [
       "Microsoft.Web/locations/operationResults/read",
       "Microsoft.Web/locations/operations/read",
+      "Microsoft.Web/locations/staticSitesOperationStatuses/read",
     ]
   }
 
