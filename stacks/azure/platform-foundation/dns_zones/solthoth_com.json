@@ -7,5 +7,12 @@
     "managed_by": "opentofu",
     "source": "github.com/bit-and-byte-ideas/platform-foundation"
   },
-  "records": []
+  "records": [
+    {
+      "type": "TXT",
+      "name": "@",
+      "ttl": 300,
+      "values": ["_aextpbmw509on0revb4guvv70z1m94t"]
+    }
+  ]
 }
