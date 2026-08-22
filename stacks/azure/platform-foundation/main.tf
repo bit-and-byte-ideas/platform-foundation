@@ -158,7 +158,14 @@ resource "azurerm_role_definition" "static_web_app_domain_poller" {
     actions = [
       "Microsoft.Web/locations/operationResults/read",
       "Microsoft.Web/locations/operations/read",
-      "Microsoft.Web/locations/staticSitesOperationStatuses/read",
+      # Not a literal registerable action — `az provider operation show
+      # --namespace Microsoft.Web` doesn't list it, and Tofu rejects it
+      # verbatim with InvalidActionOrNotAction if you try. The provider's
+      # own AuthorizationFailed error names it anyway when polling a Static
+      # Web App custom domain create/update, so it has to be granted via a
+      # wildcard scoped to just this pseudo-resource type rather than the
+      # exact string.
+      "Microsoft.Web/locations/staticSitesOperationStatuses/*",
     ]
   }
 
